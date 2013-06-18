@@ -11,18 +11,7 @@ class Heroku::Command::Repo < Heroku::Command::BaseWithApp
   # Deletes the contents the build cache in the repository
   #
   def purge_cache
-    run <<EOF
-set -e
-mkdir -p tmp/repo_tmp/unpack
-cd tmp/repo_tmp
-curl -o repo.tgz '#{repo_get_url}'
-cd unpack
-tar -zxf ../repo.tgz
-rm -rf .cache/*
-tar -zcf ../repack.tgz .
-curl -o /dev/null --upload-file ../repack.tgz '#{repo_put_url}'
-exit
-EOF
+    run_remote 'purge_cache'
   end
 
   # repo:gc
@@ -30,18 +19,7 @@ EOF
   # Run a git gc --agressive on the applications repository
   #
   def gc
-    run <<EOF
-set -e
-mkdir -p tmp/repo_tmp/unpack
-cd tmp/repo_tmp
-curl -o repo.tgz '#{repo_get_url}'
-cd unpack
-tar -zxf ../repo.tgz
-git gc --aggressive
-tar -zcf ../repack.tgz .
-curl -o /dev/null --upload-file ../repack.tgz '#{repo_put_url}'
-exit
-EOF
+    run_remote 'gc'
   end
 
   # repo:download
@@ -56,15 +34,7 @@ EOF
   #
   # Reset the repo and cache
   def reset
-    run <<EOF
-set -e
-mkdir -p tmp/repo_tmp/unpack
-cd tmp/repo_tmp/unpack
-git init --bare .
-tar -zcf ../repack.tgz .
-curl -o /dev/null --upload-file ../repack.tgz '#{repo_put_url}'
-exit
-EOF
+    run_remote 'reset'
   end
 
   # repo:rebuild
