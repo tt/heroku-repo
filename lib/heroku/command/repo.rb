@@ -1,3 +1,6 @@
+require 'base64'
+require 'em-eventsource'
+require 'erb'
 require 'vendor/heroku/okjson'
 
 # Slug manipulation
@@ -98,6 +101,26 @@ EOF
     ensure
       tmpfile.close
       tmpfile.unlink
+    end
+  end
+
+  def run_remote(command)
+    EM.run do
+      source_url = "http://heroku-repo-backend.herokuapp.com/commands/#{command}"
+      source_url += "?get=#{ERB::Util.url_encode(repo_get_url)}"
+      source_url += "&put=#{ERB::Util.url_encode(repo_put_url)}"
+
+      source = EventMachine::EventSource.new(source_url)
+
+      source.on 'out' do |message| STDOUT << Base64.decode64(message) end
+      source.on 'err' do |message| STDERR << Base64.decode64(message) end
+
+      source.on 'close' do
+        source.close
+        EM.stop
+      end
+
+      source.start
     end
   end
 end
