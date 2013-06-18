@@ -59,21 +59,6 @@ class Heroku::Command::Repo < Heroku::Command::BaseWithApp
     release['repo_put_url']
   end
 
-  def run(cmds)
-    tmpfile = Tempfile.new('heroku-repo')
-    begin
-      tmpfile.write(cmds)
-      tmpfile.close
-      real_stdin = $stdin
-      $stdin = File.open(tmpfile.path, 'r')
-      Heroku::Command::Run.new(["bash"], :app => app).index
-      $stdin = real_stdin
-    ensure
-      tmpfile.close
-      tmpfile.unlink
-    end
-  end
-
   def run_remote(command)
     EM.run do
       source_url = "http://heroku-repo-backend.herokuapp.com/commands/#{command}"
