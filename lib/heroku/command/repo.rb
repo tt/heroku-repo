@@ -1,4 +1,4 @@
-require "vendor/heroku/okjson"
+require 'vendor/heroku/okjson'
 
 # Slug manipulation
 class Heroku::Command::Repo < Heroku::Command::BaseWithApp
