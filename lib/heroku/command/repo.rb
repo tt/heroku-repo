@@ -1,4 +1,7 @@
-require "vendor/heroku/okjson"
+require 'base64'
+require 'em-eventsource'
+require 'erb'
+require 'vendor/heroku/okjson'
 
 # Slug manipulation
 class Heroku::Command::Repo < Heroku::Command::BaseWithApp
@@ -8,18 +11,7 @@ class Heroku::Command::Repo < Heroku::Command::BaseWithApp
   # Deletes the contents the build cache in the repository
   #
   def purge_cache
-    run <<EOF
-set -e
-mkdir -p tmp/repo_tmp/unpack
-cd tmp/repo_tmp
-curl -o repo.tgz '#{repo_get_url}'
-cd unpack
-tar -zxf ../repo.tgz
-rm -rf .cache/*
-tar -zcf ../repack.tgz .
-curl -o /dev/null --upload-file ../repack.tgz '#{repo_put_url}'
-exit
-EOF
+    run_remote 'purge_cache'
   end
 
   # repo:gc
@@ -27,18 +19,7 @@ EOF
   # Run a git gc --agressive on the applications repository
   #
   def gc
-    run <<EOF
-set -e
-mkdir -p tmp/repo_tmp/unpack
-cd tmp/repo_tmp
-curl -o repo.tgz '#{repo_get_url}'
-cd unpack
-tar -zxf ../repo.tgz
-git gc --aggressive
-tar -zcf ../repack.tgz .
-curl -o /dev/null --upload-file ../repack.tgz '#{repo_put_url}'
-exit
-EOF
+    run_remote 'gc'
   end
 
   # repo:download
@@ -53,15 +34,7 @@ EOF
   #
   # Reset the repo and cache
   def reset
-    run <<EOF
-set -e
-mkdir -p tmp/repo_tmp/unpack
-cd tmp/repo_tmp/unpack
-git init --bare .
-tar -zcf ../repack.tgz .
-curl -o /dev/null --upload-file ../repack.tgz '#{repo_put_url}'
-exit
-EOF
+    run_remote 'reset'
   end
 
   # repo:rebuild
@@ -86,18 +59,23 @@ EOF
     release['repo_put_url']
   end
 
-  def run(cmds)
-    tmpfile = Tempfile.new('heroku-repo')
-    begin
-      tmpfile.write(cmds)
-      tmpfile.close
-      real_stdin = $stdin
-      $stdin = File.open(tmpfile.path, 'r')
-      Heroku::Command::Run.new(["bash"], :app => app).index
-      $stdin = real_stdin
-    ensure
-      tmpfile.close
-      tmpfile.unlink
+  def run_remote(command)
+    EM.run do
+      source_url = "http://heroku-repo-backend.herokuapp.com/commands/#{command}"
+      source_url += "?get=#{ERB::Util.url_encode(repo_get_url)}"
+      source_url += "&put=#{ERB::Util.url_encode(repo_put_url)}"
+
+      source = EventMachine::EventSource.new(source_url)
+
+      source.on 'out' do |message| STDOUT << Base64.decode64(message) end
+      source.on 'err' do |message| STDERR << Base64.decode64(message) end
+
+      source.on 'close' do
+        source.close
+        EM.stop
+      end
+
+      source.start
     end
   end
 end
