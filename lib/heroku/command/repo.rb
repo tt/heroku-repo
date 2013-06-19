@@ -61,7 +61,7 @@ class Heroku::Command::Repo < Heroku::Command::BaseWithApp
 
   def run_remote(command)
     EM.run do
-      source_url = "https://heroku-repo-backend.herokuapp.com/commands/#{command}?app=#{app}"
+      source_url = "https://#{Heroku::Auth.user}:#{Heroku::Auth.password}@heroku-repo-backend.herokuapp.com/commands/#{command}?app=#{app}"
 
       source = EventMachine::EventSource.new(source_url)
 
