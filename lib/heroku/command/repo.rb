@@ -2,6 +2,8 @@ require 'base64'
 require 'em-eventsource'
 require 'vendor/heroku/okjson'
 
+require_relative '../../hash'
+
 # Slug manipulation
 class Heroku::Command::Repo < Heroku::Command::BaseWithApp
 
