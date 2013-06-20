@@ -60,7 +60,7 @@ class Heroku::Command::Repo < Heroku::Command::BaseWithApp
     EM.run do
       params.merge!({ 'app' => app })
 
-      source_url = "https://#{Heroku::Auth.user}:#{Heroku::Auth.password}@heroku-repo-backend.herokuapp.com/commands/#{command}?#{{ 'app' => app }.to_query_string}"
+      source_url = "https://#{Heroku::Auth.user}:#{Heroku::Auth.password}@heroku-repo-backend.herokuapp.com/commands/#{command}?#{params.to_query_string}"
 
       source = EventMachine::EventSource.new(source_url)
 
