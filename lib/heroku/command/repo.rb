@@ -1,6 +1,5 @@
 require 'base64'
 require 'em-eventsource'
-require 'erb'
 require 'vendor/heroku/okjson'
 
 # Slug manipulation
