@@ -3,3 +3,5 @@ Dir[File.join(File.expand_path("../vendor", __FILE__), "*")].each do |vendor|
 end
 
 require 'heroku/command/repo'
+
+require_relative './lib/heroku/command/releases'
