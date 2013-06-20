@@ -8,7 +8,7 @@ module Heroku::Command::RemoteCommand
     EM.run do
       params.merge!({ 'app' => app })
 
-      source_url = "https://#{Heroku::Auth.user}:#{Heroku::Auth.password}@heroku-repo-backend.herokuapp.com/commands/#{command}?#{params.to_query_string}"
+      source_url = "https://#{Heroku::Auth.api_key}@heroku-repo-backend.herokuapp.com/commands/#{command}?#{params.to_query_string}"
 
       source = EventMachine::EventSource.new(source_url)
 
