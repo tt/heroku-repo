@@ -56,7 +56,7 @@ class Heroku::Command::Repo < Heroku::Command::BaseWithApp
     release['repo_get_url']
   end
 
-  def run_remote(command)
+  def run_remote(command, params={})
     EM.run do
       source_url = "https://#{Heroku::Auth.user}:#{Heroku::Auth.password}@heroku-repo-backend.herokuapp.com/commands/#{command}?#{{ 'app' => app }.to_query_string}"
 
