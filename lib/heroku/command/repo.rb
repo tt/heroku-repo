@@ -60,6 +60,7 @@ EOF
   #
   # Download the repository
   def download
+    system("curl -o #{app}-cache.tgz '#{cache_get_url}'")
     system("curl -o #{app}-repo.tgz '#{repo_get_url}'")
   end
 
