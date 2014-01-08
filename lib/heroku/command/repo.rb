@@ -104,6 +104,13 @@ EOF
     system "git push #{extract_app_from_git_config || "heroku"} master"
   end
 
+  # repo:upload_cache
+  #
+  # Uploads a modified cache
+  def upload_cache
+    system("curl -o /dev/null --upload-file #{app}-cache.tgz '#{cache_put_url}'")
+  end
+
   private
 
   def cache_delete_url
